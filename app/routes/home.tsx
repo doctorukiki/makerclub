@@ -1,6 +1,7 @@
 import type { Route } from "./+types/home";
 import { Welcome } from "../welcome/welcome";
 import { Button } from "~/components/ui/button";
+import { Link } from "react-router";
 
 export function meta({}: Route.MetaArgs) {
 	return [
@@ -10,5 +11,11 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
-	return <Button>Click me</Button>;
+	return (
+		<div className="flex flex-col items-center justify-center h-screen">
+			<Button asChild>
+				<Link to="https://miumiupoly.pages.dev/">내 블로그로 이동</Link>
+			</Button>
+		</div>
+	);
 }
