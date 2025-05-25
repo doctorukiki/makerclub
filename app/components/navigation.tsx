@@ -13,6 +13,7 @@ import { cn } from "~/lib/utils";
 import { Button } from "./ui/button";
 import { Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
+import { ShineBorder } from "components/magicui/shine-border";
 
 const menus = [
 	{
@@ -75,7 +76,7 @@ export default function Navigation() {
 					to="/"
 					className="font-bold tracking-tighter text-lg mr-4 sm:mr-8"
 				>
-					herenow
+					HereNow
 				</Link>
 
 				{/* 데스크탑 메뉴 */}
@@ -150,16 +151,20 @@ export default function Navigation() {
 				<div className="hidden sm:block">
 					<Button
 						variant="outline"
-						className="border-blue-500 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+						// className="border-blue-500 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
 						asChild
 					>
 						<Link to="/login">로그인</Link>
 					</Button>
 				</div>
-				<div className="hidden sm:block">
-					<Button asChild>
+				<div className="relative rounded-md">
+					<Button size="lg" variant="outline" asChild>
 						<Link to="/signup">회원가입</Link>
 					</Button>
+
+					<ShineBorder
+						shineColor={["#A07CFE", "#FE8FB5", "#FFBE7B"]}
+					/>
 				</div>
 
 				{/* 모바일 메뉴 버튼 */}

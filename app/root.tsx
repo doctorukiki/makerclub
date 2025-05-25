@@ -6,7 +6,9 @@ import {
 	Outlet,
 	Scripts,
 	ScrollRestoration,
+	useLocation,
 } from "react-router";
+import { Suspense } from "react";
 
 import type { Route } from "./+types/root";
 import "./app.css";
@@ -17,6 +19,7 @@ import {
 	NavigationMenuTrigger,
 } from "./components/ui/navigation-menu";
 import Navigation from "./components/navigation";
+import NavigationGlow from "./components/navigation_glow";
 
 export const links: Route.LinksFunction = () => [
 	{ rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -31,6 +34,15 @@ export const links: Route.LinksFunction = () => [
 	},
 ];
 
+function SafeMeta() {
+	try {
+		return <Meta />;
+	} catch (error) {
+		console.warn("Meta component error:", error);
+		return null;
+	}
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
 	return (
 		<html lang="en">
@@ -40,7 +52,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 					name="viewport"
 					content="width=device-width, initial-scale=1"
 				/>
-				<Meta />
+				<Suspense fallback={null}>
+					<SafeMeta />
+				</Suspense>
 				<Links />
 			</head>
 			<body>
@@ -53,9 +67,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+	const location = useLocation();
+	const isGlowPage = location.pathname === "/landing_glow";
+
 	return (
 		<div>
-			<Navigation />
+			{isGlowPage ? <NavigationGlow /> : <Navigation />}
 			<Outlet />
 		</div>
 	);

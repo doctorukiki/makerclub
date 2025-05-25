@@ -1,9 +1,28 @@
-import { Link } from "react-router";
+import { BorderBeam } from "components/magicui/border-beam";
+import { ShineBorder } from "components/magicui/shine-border";
+import { Link, useSearchParams } from "react-router";
 import { Button } from "~/components/ui/button";
+import { Badge } from "~/components/ui/badge";
 
 export default function Landing() {
+	const [searchParams] = useSearchParams();
+	const isAbTest = searchParams.get("ab_test");
+	const variant = searchParams.get("variant");
+
 	return (
 		<div className="min-h-screen">
+			{/* A/B 테스트 디버그 정보 */}
+			{isAbTest && process.env.NODE_ENV === "development" && (
+				<div className="fixed top-20 right-4 z-50">
+					<Badge
+						variant="secondary"
+						className="bg-blue-100 text-blue-800"
+					>
+						A/B Test: {isAbTest} | Variant: {variant}
+					</Badge>
+				</div>
+			)}
+
 			{/* 히어로 섹션 */}
 			<section className="relative flex min-h-screen items-center justify-center bg-gradient-to-r from-blue-50 to-indigo-50 pt-32">
 				<div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-6 md:grid-cols-2">
@@ -20,9 +39,19 @@ export default function Landing() {
 							<Button size="lg" asChild>
 								<Link to="/signup">시작하기</Link>
 							</Button>
-							<Button size="lg" variant="outline" asChild>
-								<Link to="/host/guide">호스트 되기</Link>
-							</Button>
+							<div className="relative rounded-md">
+								<Button size="lg" variant="outline" asChild>
+									<Link to="/host/guide">호스트 되기</Link>
+								</Button>
+
+								<ShineBorder
+									shineColor={[
+										"#A07CFE",
+										"#FE8FB5",
+										"#FFBE7B",
+									]}
+								/>
+							</div>
 						</div>
 					</div>
 					<div className="flex items-center justify-center">
@@ -41,11 +70,11 @@ export default function Landing() {
 			<section className="py-24">
 				<div className="mx-auto max-w-7xl px-6">
 					<div className="mx-auto max-w-2xl text-center">
-						<h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-							새로운 여행 경험을 만들어보세요
+						<h2 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+							새로운 여행경험을 만들어보세요
 						</h2>
-						<p className="mt-6 text-lg leading-8 text-gray-600">
-							Here&Now는 여행자와 현지인을 연결하여 더 풍부하고
+						<p className="mt-6 text-base leading-8 text-gray-600">
+							HereNow는 여행자와 현지인을 연결하여 더 풍부하고
 							의미 있는 경험을 제공합니다.
 						</p>
 					</div>
@@ -100,7 +129,7 @@ export default function Landing() {
 						지금 바로 시작하세요
 					</h2>
 					<p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-600">
-						새로운 사람들과 특별한 경험을 만들어보세요. Here&Now와
+						새로운 사람들과 특별한 경험을 만들어보세요. HereNow와
 						함께라면 어디서든 연결될 수 있습니다.
 					</p>
 					<div className="mt-10 flex items-center justify-center gap-x-6">
@@ -209,7 +238,7 @@ export default function Landing() {
 						</div>
 					</div>
 					<div className="mt-12 border-t border-gray-800 pt-8 text-center text-sm text-gray-400">
-						© {new Date().getFullYear()} Here&Now. All rights
+						© {new Date().getFullYear()} HereNow. All rights
 						reserved.
 					</div>
 				</div>
