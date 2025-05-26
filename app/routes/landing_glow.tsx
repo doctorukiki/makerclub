@@ -10,9 +10,7 @@ import {
 	MapPin,
 	Camera,
 	Coffee,
-	Plane,
 	Star,
-	MessageCircle,
 	Globe,
 	Sparkles,
 	Zap,
@@ -151,7 +149,7 @@ export default function LandingGlow() {
 								asChild
 							>
 								<Link
-									to="/signup"
+									to="/signup_glow"
 									className="flex items-center"
 								>
 									<Zap className="w-5 h-5 mr-2" />
@@ -320,7 +318,10 @@ export default function LandingGlow() {
 							className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 hover:from-purple-700 hover:via-pink-700 hover:to-blue-700 text-white px-12 py-6 text-xl font-bold shadow-2xl shadow-purple-500/25 transition-all duration-300"
 							asChild
 						>
-							<Link to="/signup" className="flex items-center">
+							<Link
+								to="/signup_glow"
+								className="flex items-center"
+							>
 								<Heart className="w-6 h-6 mr-3" />
 								무료로 시작하기
 								<ArrowRight className="w-6 h-6 ml-3" />

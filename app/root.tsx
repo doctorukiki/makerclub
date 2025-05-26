@@ -68,11 +68,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
 	const location = useLocation();
+	const isLandingPage =
+		location.pathname === "/landing" ||
+		location.pathname === "/landing_glow";
 	const isGlowPage = location.pathname === "/landing_glow";
 
 	return (
 		<div>
-			{isGlowPage ? <NavigationGlow /> : <Navigation />}
+			{isLandingPage &&
+				(isGlowPage ? <NavigationGlow /> : <Navigation />)}
 			<Outlet />
 		</div>
 	);

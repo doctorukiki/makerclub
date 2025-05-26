@@ -168,7 +168,7 @@ export default function NavigationGlow() {
 						className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg shadow-purple-500/25"
 						asChild
 					>
-						<Link to="/signup">회원가입</Link>
+						<Link to="/signup_glow">회원가입</Link>
 					</Button>
 					<BorderBeam />
 				</div>
@@ -248,7 +248,7 @@ export default function NavigationGlow() {
 									className="w-full h-12 text-base bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg shadow-purple-500/25"
 									asChild
 								>
-									<Link to="/signup" onClick={closeMenu}>
+									<Link to="/signup_glow" onClick={closeMenu}>
 										회원가입
 									</Link>
 								</Button>

@@ -81,8 +81,8 @@ export async function action({ request }: ActionFunctionArgs) {
 			marketingConsent,
 		});
 
-		// 임시로 성공 시 홈으로 리다이렉트
-		return redirect("/");
+		// 회원가입 성공 시 성향 평가 페이지로 리다이렉트
+		return redirect("/question");
 	} catch (error) {
 		console.error("회원가입 오류:", error);
 		return {
@@ -179,7 +179,7 @@ export default function Signup() {
 
 	// 다음 단계로
 	const nextStep = () => {
-		if (step < 4) setStep(step + 1);
+		if (step < 5) setStep(step + 1);
 	};
 
 	// 이전 단계로
@@ -201,12 +201,11 @@ export default function Signup() {
 					formData.password === formData.confirmPassword
 				);
 			case 3:
-				return (
-					formData.interests.length > 0 &&
-					formData.languages.length > 0
-				);
-			case 4:
 				return formData.location !== "";
+			case 4:
+				return formData.interests.length > 0;
+			case 5:
+				return formData.languages.length > 0;
 			default:
 				return false;
 		}
@@ -219,16 +218,16 @@ export default function Signup() {
 				<div className="mb-8">
 					<div className="flex justify-between items-center mb-2">
 						<span className="text-sm text-gray-600">
-							단계 {step} / 4
+							단계 {step} / 5
 						</span>
 						<span className="text-sm text-gray-600">
-							{Math.round((step / 4) * 100)}% 완료
+							{Math.round((step / 5) * 100)}% 완료
 						</span>
 					</div>
 					<div className="h-2 bg-gray-200 rounded-full">
 						<div
 							className="h-2 bg-blue-500 rounded-full transition-all duration-300"
-							style={{ width: `${(step / 4) * 100}%` }}
+							style={{ width: `${(step / 5) * 100}%` }}
 						/>
 					</div>
 				</div>
@@ -240,8 +239,9 @@ export default function Signup() {
 							{step === 1 &&
 								"어떤 유형의 사용자인지 선택해주세요"}
 							{step === 2 && "기본 정보를 입력해주세요"}
-							{step === 3 && "관심사와 언어를 선택해주세요"}
-							{step === 4 && "위치 정보를 설정해주세요"}
+							{step === 3 && "위치 정보를 설정해주세요"}
+							{step === 4 && "관심사를 선택해주세요"}
+							{step === 5 && "사용 가능한 언어를 선택해주세요"}
 						</CardDescription>
 					</CardHeader>
 
@@ -407,78 +407,8 @@ export default function Signup() {
 							</div>
 						)}
 
-						{/* 3단계: 관심사 및 언어 선택 */}
+						{/* 3단계: 위치 설정 */}
 						{step === 3 && (
-							<div className="space-y-6">
-								<div>
-									<Label className="text-base font-medium">
-										관심사 선택
-									</Label>
-									<p className="text-sm text-gray-500 mb-3">
-										함께 즐기고 싶은 활동들을 선택해주세요
-									</p>
-									<div className="grid grid-cols-2 gap-2">
-										{INTERESTS.map(
-											({ id, label, icon: Icon }) => (
-												<Button
-													key={id}
-													type="button"
-													variant={
-														formData.interests.includes(
-															id
-														)
-															? "default"
-															: "outline"
-													}
-													size="sm"
-													onClick={() =>
-														toggleInterest(id)
-													}
-													className="justify-start h-auto p-3"
-												>
-													<Icon className="w-4 h-4 mr-2" />
-													{label}
-												</Button>
-											)
-										)}
-									</div>
-								</div>
-
-								<div>
-									<Label className="text-base font-medium">
-										사용 가능한 언어
-									</Label>
-									<p className="text-sm text-gray-500 mb-3">
-										대화할 수 있는 언어를 선택해주세요
-									</p>
-									<div className="grid grid-cols-2 gap-2">
-										{LANGUAGES.map(({ code, label }) => (
-											<Button
-												key={code}
-												type="button"
-												variant={
-													formData.languages.includes(
-														code
-													)
-														? "default"
-														: "outline"
-												}
-												size="sm"
-												onClick={() =>
-													toggleLanguage(code)
-												}
-												className="justify-center"
-											>
-												{label}
-											</Button>
-										))}
-									</div>
-								</div>
-							</div>
-						)}
-
-						{/* 4단계: 위치 설정 */}
-						{step === 4 && (
 							<div className="space-y-4">
 								<div className="space-y-2">
 									<Label htmlFor="location">현재 위치</Label>
@@ -519,6 +449,81 @@ export default function Signup() {
 										마케팅 정보 수신에 동의합니다 (선택)
 									</Label>
 								</div>
+							</div>
+						)}
+
+						{/* 4단계: 관심사 선택 */}
+						{step === 4 && (
+							<div className="space-y-6">
+								<div>
+									<Label className="text-base font-medium">
+										관심사 선택
+									</Label>
+									<p className="text-sm text-gray-500 mb-3">
+										함께 즐기고 싶은 활동들을 선택해주세요
+									</p>
+									<div className="grid grid-cols-2 gap-2">
+										{INTERESTS.map(
+											({ id, label, icon: Icon }) => (
+												<Button
+													key={id}
+													type="button"
+													variant={
+														formData.interests.includes(
+															id
+														)
+															? "default"
+															: "outline"
+													}
+													size="sm"
+													onClick={() =>
+														toggleInterest(id)
+													}
+													className="justify-start h-auto p-3"
+												>
+													<Icon className="w-4 h-4 mr-2" />
+													{label}
+												</Button>
+											)
+										)}
+									</div>
+								</div>
+							</div>
+						)}
+
+						{/* 5단계: 언어 선택 및 최종 정보 요약 */}
+						{step === 5 && (
+							<div className="space-y-6">
+								<div>
+									<Label className="text-base font-medium">
+										사용 가능한 언어
+									</Label>
+									<p className="text-sm text-gray-500 mb-3">
+										대화할 수 있는 언어를 선택해주세요
+									</p>
+									<div className="grid grid-cols-2 gap-2">
+										{LANGUAGES.map(({ code, label }) => (
+											<Button
+												key={code}
+												type="button"
+												variant={
+													formData.languages.includes(
+														code
+													)
+														? "default"
+														: "outline"
+												}
+												size="sm"
+												onClick={() =>
+													toggleLanguage(code)
+												}
+												className="justify-center"
+											>
+												{label}
+											</Button>
+										))}
+									</div>
+								</div>
 
 								{/* 최종 정보 요약 */}
 								<div className="mt-6 p-4 bg-gray-50 rounded-lg">
@@ -539,6 +544,10 @@ export default function Signup() {
 										<p>
 											<strong>이메일:</strong>{" "}
 											{formData.email}
+										</p>
+										<p>
+											<strong>위치:</strong>{" "}
+											{formData.location}
 										</p>
 										<p>
 											<strong>관심사:</strong>{" "}
@@ -563,10 +572,6 @@ export default function Signup() {
 												)
 												.join(", ")}
 										</p>
-										<p>
-											<strong>위치:</strong>{" "}
-											{formData.location}
-										</p>
 									</div>
 								</div>
 							</div>
@@ -587,7 +592,7 @@ export default function Signup() {
 								<div />
 							)}
 
-							{step < 4 ? (
+							{step < 5 ? (
 								<Button
 									type="button"
 									onClick={nextStep}
