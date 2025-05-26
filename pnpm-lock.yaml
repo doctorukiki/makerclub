@@ -77,6 +77,9 @@ dependencies:
   tailwind-merge:
     specifier: ^3.3.0
     version: 3.3.0
+  zod:
+    specifier: ^3.25.28
+    version: 3.25.28
 
 devDependencies:
   '@react-router/dev':
@@ -3851,3 +3854,7 @@ packages:
     resolution: {integrity: sha512-YgvUTfwqyc7UXVMrB+SImsVYSmTS8X/tSrtdNZMImM+n7+QTriRXyXim0mBrTXNeqzVF0KWGgHPeiyViFFrNDw==}
     engines: {node: '>=18'}
     dev: true
+
+  /zod@3.25.28:
+    resolution: {integrity: sha512-/nt/67WYKnr5by3YS7LroZJbtcCBurDKKPBPWWzaxvVCGuG/NOsiKkrjoOhI8mJ+SQUXEbUzeB3S+6XDUEEj7Q==}
+    dev: false
