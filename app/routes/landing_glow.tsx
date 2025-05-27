@@ -163,7 +163,7 @@ export default function LandingGlow() {
 						<Button
 							size="lg"
 							variant="outline"
-							className="border-purple-500/30 text-purple-300 hover:bg-purple-500/10 px-8 py-4 text-lg backdrop-blur-sm"
+							className="border-purple-500/50 text-purple-100 hover:text-purple-300 hover:bg-purple-500/20 hover:border-purple-400/70 backdrop-blur-sm bg-purple-700/20"
 							asChild
 						>
 							<Link to="/host/guide">호스트 되기</Link>

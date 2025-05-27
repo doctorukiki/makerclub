@@ -16,10 +16,12 @@ import {
 import {
 	ChevronLeft,
 	ChevronRight,
+	Sparkles,
 	Heart,
 	CheckCircle,
 	ArrowRight,
 } from "lucide-react";
+import { BorderBeam } from "components/magicui/border-beam";
 
 // 서버 액션 - 성향 평가 결과 저장
 export async function action({ request }: ActionFunctionArgs) {
@@ -92,7 +94,7 @@ export function loader({ request }: LoaderFunctionArgs) {
 }
 
 export const meta: MetaFunction = () => [
-	{ title: "성향 평가 - HereNow" },
+	{ title: "성향 평가 - Here&Now" },
 	{
 		name: "description",
 		content: "당신의 성향을 파악해서 더 좋은 매칭을 도와드려요",
@@ -435,249 +437,298 @@ export default function Question() {
 	const questionData = getCurrentQuestionData();
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-12 px-4">
-			<div className="mx-auto max-w-2xl">
-				{/* 헤더 */}
-				<div className="text-center mb-8">
-					<Link
-						to="/"
-						className="inline-flex items-center font-bold tracking-tighter text-2xl mb-6 text-blue-600"
-					>
-						<Heart className="w-6 h-6 mr-2" />
-						HereNow
-					</Link>
+		<div className="min-h-screen bg-black text-white overflow-hidden">
+			{/* 배경 그라데이션 애니메이션 */}
+			<div className="fixed inset-0 bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-pink-900/20 animate-pulse" />
+			<div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-500/10 via-transparent to-transparent" />
 
-					<h1 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900">
-						당신을 더 알아가는
-						<br />
-						<span className="text-blue-600">시간이에요</span>
-					</h1>
-					<p className="text-gray-600 text-lg">
-						성향을 파악해서 더 좋은 매칭을 도와드릴게요
-					</p>
-				</div>
+			{/* 플로팅 요소들 */}
+			<div className="absolute top-20 left-10 w-2 h-2 bg-purple-500 rounded-full animate-bounce delay-1000" />
+			<div className="absolute top-40 right-20 w-3 h-3 bg-pink-500 rounded-full animate-bounce delay-2000" />
+			<div className="absolute bottom-40 left-20 w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-500" />
 
-				{/* 진행률 표시 */}
-				<div className="mb-8">
-					<div className="flex justify-between items-center mb-3">
-						<span className="text-sm text-gray-600">
-							질문 {currentQuestion} / {totalQuestions}
-						</span>
-						<span className="text-sm text-gray-600">
-							{Math.round(
-								(currentQuestion / totalQuestions) * 100
-							)}
-							% 완료
-						</span>
+			<div className="relative min-h-screen flex items-start justify-center pt-8 md:pt-12 pb-6 px-4">
+				<div className="mx-auto max-w-2xl w-full">
+					{/* 헤더 */}
+					<div className="text-center mb-8">
+						<Link
+							to="/landing_glow"
+							className="inline-flex items-center font-bold tracking-tighter text-2xl mb-6 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent"
+						>
+							<Sparkles className="w-6 h-6 mr-2 text-purple-400" />
+							Here&Now
+						</Link>
+
+						<h1 className="text-3xl md:text-4xl font-bold mb-4">
+							<span className="bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
+								당신을 더 알아가는
+							</span>
+							<br />
+							<span className="text-white">시간이에요</span>
+						</h1>
+						<p className="text-gray-300 text-lg">
+							성향을 파악해서 더 좋은 매칭을 도와드릴게요
+						</p>
 					</div>
-					<div className="h-2 bg-gray-200 rounded-full">
-						<div
-							className="h-2 bg-blue-500 rounded-full transition-all duration-500"
-							style={{
-								width: `${
+
+					{/* 진행률 표시 */}
+					<div className="mb-8">
+						<div className="flex justify-between items-center mb-3">
+							<span className="text-sm text-purple-300">
+								질문 {currentQuestion} / {totalQuestions}
+							</span>
+							<span className="text-sm text-purple-300">
+								{Math.round(
 									(currentQuestion / totalQuestions) * 100
-								}%`,
-							}}
-						/>
+								)}
+								% 완료
+							</span>
+						</div>
+						<div className="h-2 bg-purple-900/30 rounded-full backdrop-blur-sm">
+							<div
+								className="h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-500 shadow-lg shadow-purple-500/25"
+								style={{
+									width: `${
+										(currentQuestion / totalQuestions) * 100
+									}%`,
+								}}
+							/>
+						</div>
 					</div>
-				</div>
 
-				{/* 메인 카드 */}
-				<Card className="shadow-lg">
-					<CardHeader className="text-center">
-						<CardTitle className="text-2xl text-gray-900">
-							{questionData?.question}
-						</CardTitle>
-						<CardDescription className="text-gray-600 text-lg">
-							{isChoiceQuestion
-								? "더 가까운 답변을 선택해주세요"
-								: "1점(전혀 아니야)부터 10점(완전 그렇지)까지 선택해주세요"}
-						</CardDescription>
-					</CardHeader>
+					{/* 메인 카드 */}
+					<div className="relative">
+						<Card className="bg-black/40 backdrop-blur-md border border-purple-500/20 shadow-2xl shadow-purple-500/10">
+							<CardHeader className="text-center">
+								<CardTitle className="text-2xl bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+									{questionData?.question}
+								</CardTitle>
+								<CardDescription className="text-gray-300 text-sm">
+									{isChoiceQuestion
+										? "더 가까운 답변을 선택해주세요"
+										: "1점(전혀 아니야)부터 10점(완전 그렇지)까지 선택해주세요"}
+								</CardDescription>
+							</CardHeader>
 
-					<CardContent className="space-y-6">
-						{/* 선택형 질문 (1-30번) */}
-						{isChoiceQuestion &&
-							questionData &&
-							"options" in questionData && (
-								<div className="space-y-4">
-									{questionData.options.map(
-										(option, index) => (
-											<div
-												key={index}
-												className="relative"
-											>
-												<Button
-													type="button"
-													variant="outline"
-													onClick={() =>
-														handleChoiceAnswer(
-															index
-														)
-													}
-													className={`w-full p-6 h-auto text-left justify-start transition-all duration-300 ${
-														choiceAnswers[
-															currentQuestion
-														] === index
-															? "bg-blue-50 border-blue-500 text-blue-900"
-															: "hover:bg-gray-50"
-													}`}
-												>
-													<div className="flex items-center w-full">
-														<div className="flex-1 text-lg">
-															{option}
-														</div>
+							<CardContent className="space-y-6">
+								{/* 선택형 질문 (1-30번) */}
+								{isChoiceQuestion &&
+									questionData &&
+									"options" in questionData && (
+										<div className="space-y-4">
+											{questionData.options.map(
+												(option, index) => (
+													<div
+														key={index}
+														className="relative"
+													>
+														<Button
+															type="button"
+															variant="outline"
+															onClick={() =>
+																handleChoiceAnswer(
+																	index
+																)
+															}
+															className={`w-full p-6 h-auto text-left justify-start transition-all duration-300 ${
+																choiceAnswers[
+																	currentQuestion
+																] === index
+																	? "bg-purple-500/20 border-purple-400 text-white shadow-lg shadow-purple-500/25 backdrop-blur-sm"
+																	: "bg-black/20 border-purple-500/30 text-gray-300 hover:bg-purple-500/10 hover:border-purple-400/50 hover:text-purple-200 backdrop-blur-sm"
+															}`}
+														>
+															<div className="flex items-center w-full">
+																<div className="flex-1 text-lg">
+																	{option}
+																</div>
+																{choiceAnswers[
+																	currentQuestion
+																] === index && (
+																	<CheckCircle className="w-6 h-6 ml-4 text-white" />
+																)}
+															</div>
+														</Button>
 														{choiceAnswers[
 															currentQuestion
 														] === index && (
-															<CheckCircle className="w-6 h-6 ml-4 text-blue-600" />
+															<div className="absolute inset-0 rounded-md bg-gradient-to-r from-purple-600 to-pink-600 opacity-20 blur-md -z-10" />
 														)}
 													</div>
-												</Button>
+												)
+											)}
+										</div>
+									)}
+
+								{/* 점수형 질문 (31-40번) */}
+								{isScaleQuestion &&
+									questionData &&
+									"leftEmoji" in questionData && (
+										<div className="space-y-6">
+											{/* 이모티콘과 설명 */}
+											<div className="flex justify-between items-center px-4">
+												<div className="text-center">
+													<div className="text-3xl mb-2">
+														{questionData.leftEmoji}
+													</div>
+													<div className="text-sm text-gray-400">
+														전혀 아니야
+													</div>
+												</div>
+												<div className="text-center">
+													<div className="text-3xl mb-2">
+														{
+															questionData.rightEmoji
+														}
+													</div>
+													<div className="text-sm text-gray-400">
+														완전 그렇지
+													</div>
+												</div>
 											</div>
-										)
+
+											{/* 점수 선택 버튼들 */}
+											<div className="space-y-4">
+												{/* 1-5점 */}
+												<div className="grid grid-cols-5 gap-3">
+													{[1, 2, 3, 4, 5].map(
+														(score) => (
+															<Button
+																key={score}
+																type="button"
+																variant="outline"
+																onClick={() =>
+																	handleScaleAnswer(
+																		score
+																	)
+																}
+																className={`aspect-square text-lg font-semibold transition-all duration-300 ${
+																	scaleAnswers[
+																		currentQuestion
+																	] === score
+																		? "bg-gradient-to-r from-red-500 to-orange-500 text-white border-transparent shadow-lg"
+																		: "bg-black/20 border-purple-500/30 text-gray-300 hover:bg-purple-500/10 hover:border-purple-400/50 backdrop-blur-sm"
+																}`}
+															>
+																{score}
+															</Button>
+														)
+													)}
+												</div>
+
+												{/* 6-10점 */}
+												<div className="grid grid-cols-5 gap-3">
+													{[6, 7, 8, 9, 10].map(
+														(score) => (
+															<Button
+																key={score}
+																type="button"
+																variant="outline"
+																onClick={() =>
+																	handleScaleAnswer(
+																		score
+																	)
+																}
+																className={`aspect-square text-lg font-semibold transition-all duration-300 ${
+																	scaleAnswers[
+																		currentQuestion
+																	] === score
+																		? "bg-gradient-to-r from-green-500 to-blue-500 text-white border-transparent shadow-lg"
+																		: "bg-black/20 border-purple-500/30 text-gray-300 hover:bg-purple-500/10 hover:border-purple-400/50 backdrop-blur-sm"
+																}`}
+															>
+																{score}
+															</Button>
+														)
+													)}
+												</div>
+											</div>
+										</div>
+									)}
+
+								{/* 네비게이션 버튼 */}
+								<div className="flex justify-between pt-6">
+									{currentQuestion > 1 ? (
+										<Button
+											type="button"
+											variant="outline"
+											onClick={prevQuestion}
+											className="border-purple-500/50 text-purple-100 hover:text-purple-300 hover:bg-purple-500/20 hover:border-purple-400/70 backdrop-blur-sm bg-purple-700/20"
+										>
+											<ChevronLeft className="w-4 h-4 mr-2" />
+											이전
+										</Button>
+									) : (
+										<div />
+									)}
+
+									{currentQuestion < totalQuestions ? (
+										<div className="relative">
+											<Button
+												type="button"
+												onClick={nextQuestion}
+												disabled={
+													!isCurrentQuestionAnswered()
+												}
+												className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+											>
+												다음
+												<ChevronRight className="w-4 h-4 ml-2" />
+											</Button>
+											{isCurrentQuestionAnswered() && (
+												<BorderBeam />
+											)}
+										</div>
+									) : (
+										<Form method="post">
+											<input
+												type="hidden"
+												name="choiceAnswers"
+												value={JSON.stringify(
+													choiceAnswers
+												)}
+											/>
+											<input
+												type="hidden"
+												name="scaleAnswers"
+												value={JSON.stringify(
+													scaleAnswers
+												)}
+											/>
+
+											<div className="relative">
+												<Button
+													type="submit"
+													disabled={
+														!isAllQuestionsAnswered()
+													}
+													className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 hover:from-purple-700 hover:via-pink-700 hover:to-blue-700 text-white px-8 py-3 font-semibold shadow-lg shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+												>
+													<Heart className="w-5 h-5 mr-2" />
+													완료하기
+													<ArrowRight className="w-5 h-5 ml-2" />
+												</Button>
+												{isAllQuestionsAnswered() && (
+													<BorderBeam />
+												)}
+											</div>
+										</Form>
 									)}
 								</div>
-							)}
+							</CardContent>
+						</Card>
+						{/* <BorderBeam /> */}
+					</div>
 
-						{/* 점수형 질문 (31-40번) */}
-						{isScaleQuestion &&
-							questionData &&
-							"leftEmoji" in questionData && (
-								<div className="space-y-6">
-									{/* 이모티콘과 설명 */}
-									<div className="flex justify-between items-center px-4">
-										<div className="text-center">
-											<div className="text-3xl mb-2">
-												{questionData.leftEmoji}
-											</div>
-											<div className="text-sm text-gray-500">
-												전혀 아니야
-											</div>
-										</div>
-										<div className="text-center">
-											<div className="text-3xl mb-2">
-												{questionData.rightEmoji}
-											</div>
-											<div className="text-sm text-gray-500">
-												완전 그렇지
-											</div>
-										</div>
-									</div>
-
-									{/* 점수 선택 버튼들 */}
-									<div className="space-y-4">
-										{/* 1-5점 */}
-										<div className="grid grid-cols-5 gap-3">
-											{[1, 2, 3, 4, 5].map((score) => (
-												<Button
-													key={score}
-													type="button"
-													variant="outline"
-													onClick={() =>
-														handleScaleAnswer(score)
-													}
-													className={`h-12 w-full text-lg font-semibold transition-all duration-300 ${
-														scaleAnswers[
-															currentQuestion
-														] === score
-															? "bg-red-500 text-white border-red-500 shadow-lg transform scale-105"
-															: "hover:bg-gray-50 hover:scale-105"
-													}`}
-												>
-													{score}
-												</Button>
-											))}
-										</div>
-
-										{/* 6-10점 */}
-										<div className="grid grid-cols-5 gap-3">
-											{[6, 7, 8, 9, 10].map((score) => (
-												<Button
-													key={score}
-													type="button"
-													variant="outline"
-													onClick={() =>
-														handleScaleAnswer(score)
-													}
-													className={`h-12 w-full text-lg font-semibold transition-all duration-300 ${
-														scaleAnswers[
-															currentQuestion
-														] === score
-															? "bg-green-500 text-white border-green-500 shadow-lg transform scale-105"
-															: "hover:bg-gray-50 hover:scale-105"
-													}`}
-												>
-													{score}
-												</Button>
-											))}
-										</div>
-									</div>
-								</div>
-							)}
-
-						{/* 네비게이션 버튼 */}
-						<div className="flex justify-between pt-6">
-							{currentQuestion > 1 ? (
-								<Button
-									type="button"
-									variant="outline"
-									onClick={prevQuestion}
-									className="border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400"
-								>
-									<ChevronLeft className="w-4 h-4 mr-2" />
-									이전
-								</Button>
-							) : (
-								<div />
-							)}
-
-							{currentQuestion < totalQuestions ? (
-								<Button
-									type="button"
-									onClick={nextQuestion}
-									disabled={!isCurrentQuestionAnswered()}
-									className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
-								>
-									다음
-									<ChevronRight className="w-4 h-4 ml-2" />
-								</Button>
-							) : (
-								<Form method="post">
-									<input
-										type="hidden"
-										name="choiceAnswers"
-										value={JSON.stringify(choiceAnswers)}
-									/>
-									<input
-										type="hidden"
-										name="scaleAnswers"
-										value={JSON.stringify(scaleAnswers)}
-									/>
-
-									<Button
-										type="submit"
-										disabled={!isAllQuestionsAnswered()}
-										className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-									>
-										<Heart className="w-5 h-5 mr-2" />
-										완료하기
-										<ArrowRight className="w-5 h-5 ml-2" />
-									</Button>
-								</Form>
-							)}
-						</div>
-					</CardContent>
-				</Card>
-
-				{/* 진행 상황 표시 */}
-				<div className="text-center mt-8">
-					<p className="text-gray-500 text-sm">
-						{isChoiceQuestion ? "선택형 질문" : "점수형 질문"} •
-						{isChoiceQuestion
-							? ` ${currentQuestion}/30`
-							: ` ${currentQuestion - 30}/10`}
-					</p>
+					{/* 진행 상황 표시 */}
+					<div className="text-center mt-8">
+						<p className="text-gray-400 text-sm">
+							{isChoiceQuestion ? "선택형 질문" : "점수형 질문"} •
+							{isChoiceQuestion
+								? ` ${currentQuestion}/30`
+								: ` ${currentQuestion - 30}/10`}
+						</p>
+					</div>
 				</div>
 			</div>
 		</div>

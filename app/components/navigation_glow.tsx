@@ -156,7 +156,7 @@ export default function NavigationGlow() {
 				<div className="hidden sm:block">
 					<Button
 						variant="outline"
-						className="border-purple-500/30 text-purple-300 hover:bg-purple-500/10 hover:text-purple-200 backdrop-blur-sm"
+						className="border-purple-500/50 text-purple-100 hover:text-purple-300 hover:bg-purple-500/20 hover:border-purple-400/70 backdrop-blur-sm bg-purple-700/20"
 						asChild
 					>
 						<Link to="/login">로그인</Link>
