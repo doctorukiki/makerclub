@@ -111,8 +111,10 @@ export async function action({ request }: ActionFunctionArgs) {
 		});
 
 		// 회원가입 성공 시 성향 평가 페이지로 리다이렉트
-		console.log("🎉 회원가입 성공! /question으로 리다이렉트 시도 중...");
-		const redirectResult = redirect("/question");
+		console.log(
+			"🎉 회원가입 성공! /question_glow 으로 리다이렉트 시도 중..."
+		);
+		const redirectResult = redirect("/question_glow");
 		console.log("🔄 Redirect 결과:", redirectResult);
 		return redirectResult;
 	} catch (error) {
@@ -881,7 +883,7 @@ export default function SignupGlow({
 											type="button"
 											variant="outline"
 											onClick={prevStep}
-											className="border-purple-500/30 text-purple-300 hover:bg-purple-500/10 hover:border-purple-400/50 backdrop-blur-sm"
+											className="border-purple-500/50 text-purple-100 hover:text-purple-300 hover:bg-purple-500/20 hover:border-purple-400/70 backdrop-blur-sm bg-purple-700/20"
 										>
 											<ChevronLeft className="w-4 h-4 mr-2" />
 											이전

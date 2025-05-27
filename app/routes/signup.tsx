@@ -39,7 +39,7 @@ export async function action({ request }: ActionFunctionArgs) {
 	const email = formData.get("email") as string;
 	const password = formData.get("password") as string;
 	const name = formData.get("name") as string;
-	const bio = formData.get("bio") as string;
+	// const bio = formData.get("bio") as string;
 	const userType = formData.get("userType") as string;
 	const interests = JSON.parse(formData.get("interests") as string);
 	const languages = JSON.parse(formData.get("languages") as string);
@@ -73,7 +73,7 @@ export async function action({ request }: ActionFunctionArgs) {
 		console.log("회원가입 데이터:", {
 			email,
 			name,
-			bio,
+			// bio,
 			userType,
 			interests,
 			languages,
@@ -388,7 +388,7 @@ export default function Signup() {
 										)}
 								</div>
 
-								<div className="space-y-2">
+								{/* <div className="space-y-2">
 									<Label htmlFor="bio">자기소개 (선택)</Label>
 									<Textarea
 										id="bio"
@@ -403,7 +403,7 @@ export default function Signup() {
 										placeholder="자신을 간단히 소개해보세요"
 										rows={3}
 									/>
-								</div>
+								</div> */}
 							</div>
 						)}
 
@@ -619,11 +619,11 @@ export default function Signup() {
 										name="name"
 										value={formData.name}
 									/>
-									<input
+									{/* <input
 										type="hidden"
 										name="bio"
 										value={formData.bio}
-									/>
+									/> */}
 									<input
 										type="hidden"
 										name="userType"
