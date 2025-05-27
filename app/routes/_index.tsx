@@ -6,7 +6,7 @@ const AB_TEST_CONFIG = {
 	// 'random' 또는 'round_robin' 선택
 	mode: "random" as "random" | "round_robin",
 	// 50/50 분할 비율 (random 모드에서만 사용)
-	glowPageRatio: 0.5,
+	glowPageRatio: 1,
 };
 
 export function loader({ request }: Route.LoaderArgs) {
