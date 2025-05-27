@@ -7,5 +7,6 @@ export default [
 	route("/login", "routes/login.tsx"),
 	route("/signup", "routes/signup.tsx"),
 	route("/signup_glow", "routes/signup_glow.tsx"),
+	route("/question_glow", "routes/question_glow.tsx"),
 	route("/question", "routes/question.tsx"),
 ] satisfies RouteConfig;
