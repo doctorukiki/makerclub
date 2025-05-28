@@ -1,4 +1,4 @@
-import { timestamp } from "drizzle-orm/pg-core";
+import { timestamp, bigint } from "drizzle-orm/pg-core";
 
 /**
  * 공통 타임스탬프 필드를 위한 헬퍼
@@ -12,3 +12,15 @@ export const timestamps = {
 		.notNull()
 		.$onUpdate(() => new Date()),
 };
+
+/**
+ * Identity column 헬퍼 함수
+ * Auto-incrementing bigint primary key를 생성합니다.
+ */
+export function makeIdentityColumn(columnName: string) {
+	return {
+		[columnName]: bigint(columnName, { mode: "number" })
+			.primaryKey()
+			.generatedAlwaysAsIdentity(),
+	};
+}
