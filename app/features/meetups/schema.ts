@@ -6,6 +6,7 @@
  */
 import {
 	boolean,
+	pgEnum,
 	pgTable,
 	timestamp,
 	uuid,
@@ -15,7 +16,15 @@ import {
 import { timestamps } from "~/core/db/helpers.server";
 
 import { matches } from "../matches/schema";
-import { meetupStatusEnum, profiles } from "../users/schema";
+import { profiles } from "../users/schema";
+
+export const meetupStatusEnum = pgEnum("meetup_status", [
+	"proposed",
+	"confirmed",
+	"declined",
+	"completed",
+	"cancelled",
+]);
 
 export const meetups = pgTable("meetups", {
 	id: uuid("id").primaryKey().defaultRandom(),

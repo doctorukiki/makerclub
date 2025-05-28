@@ -41,27 +41,9 @@ export const userStatusEnum = pgEnum("user_status", [
 	"banned",
 ]);
 
-export const messageTypeEnum = pgEnum("message_type", [
-	"text",
-	"system",
-	"location",
-]);
-export const meetupStatusEnum = pgEnum("meetup_status", [
-	"proposed",
-	"confirmed",
-	"declined",
-	"completed",
-	"cancelled",
-]);
 export const profileVisibilityEnum = pgEnum("profile_visibility", [
 	"public",
 	"hidden",
-]);
-export const emotionTagEnum = pgEnum("emotion_tag", [
-	"warm",
-	"fun",
-	"awkward",
-	"disappointing",
 ]);
 
 export const profiles = pgTable(

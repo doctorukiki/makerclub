@@ -47,7 +47,6 @@ export async function action({ request }: ActionFunctionArgs) {
 	const email = formData.get("email") as string;
 	const password = formData.get("password") as string;
 	const name = formData.get("name") as string;
-	// const bio = formData.get("bio") as string;
 	const userType = formData.get("userType") as string;
 	const interests = JSON.parse(formData.get("interests") as string);
 	const languages = JSON.parse(formData.get("languages") as string);
@@ -61,6 +60,7 @@ export async function action({ request }: ActionFunctionArgs) {
 		interests,
 		languages,
 		location,
+		marketingConsent,
 	});
 
 	// 기본 유효성 검사
@@ -84,6 +84,26 @@ export async function action({ request }: ActionFunctionArgs) {
 		console.log("❌ 이름 유효성 검사 실패:", name);
 	}
 
+	if (!userType || !["traveler", "local_host"].includes(userType)) {
+		errors.userType = "사용자 유형을 선택해주세요";
+		console.log("❌ 사용자 유형 유효성 검사 실패:", userType);
+	}
+
+	if (!interests || interests.length === 0) {
+		errors.interests = "관심사를 하나 이상 선택해주세요";
+		console.log("❌ 관심사 유효성 검사 실패:", interests);
+	}
+
+	if (!languages || languages.length === 0) {
+		errors.languages = "언어를 하나 이상 선택해주세요";
+		console.log("❌ 언어 유효성 검사 실패:", languages);
+	}
+
+	if (!location || location.trim().length < 2) {
+		errors.location = "위치를 입력해주세요";
+		console.log("❌ 위치 유효성 검사 실패:", location);
+	}
+
 	console.log("🔍 유효성 검사 결과:", {
 		errors,
 		hasErrors: Object.keys(errors).length > 0,
@@ -95,30 +115,58 @@ export async function action({ request }: ActionFunctionArgs) {
 	}
 
 	try {
-		// TODO: Supabase 인증 및 프로필 생성 로직 구현
-		// 1. Supabase Auth 사용자 생성
-		// 2. profiles 테이블에 추가 정보 저장
+		// auth.server.ts의 signUp 함수 사용
+		const { signUp } = await import("~/lib/auth.server");
 
-		console.log("💾 회원가입 데이터:", {
+		const signupData = {
 			email,
-			name,
-			// bio,
-			userType,
+			password,
+			name: name.trim(),
+			userType: userType as "traveler" | "local_host",
 			interests,
 			languages,
-			location,
+			location: location.trim(),
 			marketingConsent,
-		});
+		};
 
-		// 회원가입 성공 시 성향 평가 페이지로 리다이렉트
-		console.log(
-			"🎉 회원가입 성공! /question_glow 으로 리다이렉트 시도 중..."
-		);
-		const redirectResult = redirect("/question_glow");
-		console.log("🔄 Redirect 결과:", redirectResult);
-		return redirectResult;
+		console.log("📤 회원가입 시도 중...", signupData);
+
+		const result = await signUp(signupData);
+
+		if (result.success) {
+			console.log("🎉 회원가입 성공!", {
+				userId: result.user?.id,
+				email: result.user?.email,
+			});
+
+			console.log("🔄 /question_glow로 리다이렉트 시도 중...");
+
+			// 세션 쿠키 설정
+			const headers = new Headers();
+			if (result.session) {
+				const { createSessionCookie } = await import(
+					"~/lib/supabase.server"
+				);
+				const sessionCookie = createSessionCookie(result.session);
+				if (sessionCookie) {
+					headers.append("Set-Cookie", sessionCookie);
+				}
+			}
+
+			// 성공 시 성향 평가 페이지로 리다이렉트 (사용자 ID 포함)
+			return redirect(`/question_glow?userId=${result.user?.id}`, {
+				headers,
+			});
+		} else {
+			console.log("❌ 회원가입 실패:", result.error);
+			return {
+				errors: {
+					general: result.error || "회원가입에 실패했습니다.",
+				},
+			};
+		}
 	} catch (error) {
-		console.error("❌ 회원가입 오류:", error);
+		console.error("❌ 회원가입 처리 중 예상치 못한 오류:", error);
 		return {
 			errors: {
 				general: "회원가입 중 오류가 발생했습니다. 다시 시도해주세요.",

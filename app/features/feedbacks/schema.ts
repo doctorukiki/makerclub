@@ -4,12 +4,26 @@
  *
  *
  */
-import { integer, pgTable, text, unique, uuid } from "drizzle-orm/pg-core";
+import {
+	integer,
+	pgEnum,
+	pgTable,
+	text,
+	unique,
+	uuid,
+} from "drizzle-orm/pg-core";
 
 import { timestamps } from "~/core/db/helpers.server";
 
 import { meetups } from "../meetups/schema";
-import { emotionTagEnum, profiles } from "../users/schema";
+import { profiles } from "../users/schema";
+
+export const emotionTagEnum = pgEnum("emotion_tag", [
+	"warm",
+	"fun",
+	"awkward",
+	"disappointing",
+]);
 
 export const feedbacks = pgTable(
 	"feedbacks",

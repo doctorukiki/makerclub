@@ -65,18 +65,59 @@ export async function action({ request }: ActionFunctionArgs) {
 			personalityTraits,
 		});
 
-		// TODO: Supabase에 성향 평가 결과 저장
-		// const { data, error } = await supabase
-		//   .from('personality_assessments')
-		//   .insert({
-		//     user_id: userId,
-		//     choice_answers: validatedChoiceAnswers,
-		//     scale_answers: validatedScaleAnswers,
-		//     personality_traits: personalityTraits,
-		//     completed_at: new Date().toISOString(),
-		//   });
+		// 현재 로그인된 사용자 정보 가져오기
+		const url = new URL(request.url);
+		const userIdFromUrl = url.searchParams.get("userId");
 
-		// 임시로 성공 시 홈으로 리다이렉트
+		let userId: string;
+
+		if (userIdFromUrl) {
+			// URL 파라미터에서 사용자 ID 가져오기 (회원가입 직후)
+			userId = userIdFromUrl;
+			console.log("📋 URL에서 가져온 사용자 ID:", userId);
+		} else {
+			// 세션에서 사용자 ID 가져오기 (일반적인 경우)
+			const { getSession } = await import("~/lib/supabase.server");
+			const session = await getSession(request);
+
+			if (!session?.user?.id) {
+				console.error("❌ 로그인된 사용자가 없습니다.");
+				return {
+					errors: {
+						general: "로그인이 필요합니다. 다시 로그인해주세요.",
+					},
+				};
+			}
+
+			userId = session.user.id;
+			console.log("📋 세션에서 가져온 사용자 ID:", userId);
+		}
+
+		// Drizzle ORM으로 성향 평가 결과 저장
+		const db = (await import("~/core/db/drizzle-client.server")).default;
+		const { personalityAssessments } = await import("~/core/db/schema");
+
+		const assessmentData = {
+			user_id: userId,
+			status: "completed" as const,
+			choice_answers: validatedChoiceAnswers,
+			scale_answers: validatedScaleAnswers,
+			personality_traits: personalityTraits,
+			mbti_type: null, // TODO: MBTI 타입 계산 로직 추가
+			primary_traits: null, // TODO: 주요 특성 계산 로직 추가
+			description: null, // TODO: 설명 생성 로직 추가
+			recommended_activities: null, // TODO: 추천 활동 생성 로직 추가
+			completed_at: new Date(),
+		};
+
+		const [savedAssessment] = await db
+			.insert(personalityAssessments)
+			.values(assessmentData)
+			.returning();
+
+		console.log("✅ 성향 평가 저장 성공:", savedAssessment);
+
+		// 성공 시 홈으로 리다이렉트
 		return redirect("/");
 	} catch (error) {
 		console.error("성향 평가 저장 오류:", error);
