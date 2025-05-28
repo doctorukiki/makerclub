@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, Form, redirect } from "react-router";
+import { Link, Form, redirect, useNavigation } from "react-router";
 import type {
 	ActionFunctionArgs,
 	LoaderFunctionArgs,
@@ -34,6 +34,7 @@ import {
 	Zap,
 	Globe,
 	Star,
+	Loader2,
 } from "lucide-react";
 import { BorderBeam } from "components/magicui/border-beam";
 
@@ -375,6 +376,8 @@ export default function SignupGlow({
 		"관심사를 선택해주세요",
 		"사용 가능한 언어를 선택해주세요",
 	];
+
+	const navigation = useNavigation();
 
 	return (
 		<div className="min-h-screen bg-black text-white overflow-hidden">
@@ -1024,15 +1027,31 @@ export default function SignupGlow({
 											<div className="relative">
 												<Button
 													type="submit"
-													disabled={!isStepValid()}
+													disabled={
+														!isStepValid() ||
+														navigation.state ===
+															"submitting"
+													}
 													className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 hover:from-purple-700 hover:via-pink-700 hover:to-blue-700 text-white px-8 py-3 font-semibold shadow-lg shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
 												>
-													<Heart className="w-5 h-5 mr-2" />
-													가입 완료
+													{navigation.state ===
+													"submitting" ? (
+														<>
+															<Loader2 className="w-5 h-5 mr-2 animate-spin" />
+															가입 처리 중...
+														</>
+													) : (
+														<>
+															<Heart className="w-5 h-5 mr-2" />
+															가입 완료
+														</>
+													)}
 												</Button>
-												{isStepValid() && (
-													<BorderBeam />
-												)}
+												{isStepValid() &&
+													navigation.state !==
+														"submitting" && (
+														<BorderBeam />
+													)}
 											</div>
 										</Form>
 									)}
