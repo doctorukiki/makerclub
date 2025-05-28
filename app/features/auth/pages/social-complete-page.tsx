@@ -69,8 +69,8 @@ export const loader = async ({ params, request }: Route.LoaderArgs) => {
 				console.log(`✅ ${provider} 기존 사용자 로그인`);
 				return redirect("/");
 			} else {
-				// 새 사용자 - 프로필 생성 필요
-				console.log(`🆕 ${provider} 새 사용자 - 프로필 생성 필요`);
+				// 새 사용자 - 기본 프로필 생성 후 추가 정보 입력
+				console.log(`🆕 ${provider} 새 사용자 - 기본 프로필 생성`);
 
 				// 기본 프로필 생성
 				const profileData = {
@@ -97,8 +97,23 @@ export const loader = async ({ params, request }: Route.LoaderArgs) => {
 				await db.insert(profiles).values(profileData);
 				console.log(`✅ ${provider} 기본 프로필 생성 완료`);
 
-				// 성향 평가로 리다이렉트
-				return redirect(`/question_glow?userId=${sessionData.user.id}`);
+				// 세션 쿠키 설정
+				const { createSessionCookie } = await import(
+					"~/lib/supabase.server"
+				);
+				const headers = new Headers();
+				const sessionCookie = createSessionCookie(sessionData.session);
+				if (sessionCookie) {
+					headers.append("Set-Cookie", sessionCookie);
+				}
+
+				// Step 2로 리다이렉트 (사용자 유형 선택)
+				return redirect(
+					`/signup_glow?step=2&userId=${sessionData.user.id}&social=true`,
+					{
+						headers,
+					}
+				);
 			}
 		}
 

@@ -57,6 +57,7 @@ export async function action({ request }: ActionFunctionArgs) {
 	const languages = JSON.parse(formData.get("languages") as string);
 	const location = formData.get("location") as string;
 	const marketingConsent = formData.get("marketingConsent") === "true";
+	const socialUserId = formData.get("socialUserId") as string;
 
 	console.log("✅ 파싱된 데이터:", {
 		email,
@@ -66,22 +67,28 @@ export async function action({ request }: ActionFunctionArgs) {
 		languages,
 		location,
 		marketingConsent,
+		socialUserId,
 	});
 
-	// 기본 유효성 검사
+	// 소셜 로그인 사용자인지 확인
+	const isSocialUser = !!socialUserId;
+
+	// 기본 유효성 검사 (소셜 로그인 사용자는 이메일/비밀번호 검사 제외)
 	const errors: { [key: string]: string } = {};
 
-	if (!email || !email.includes("@")) {
-		errors.email = "유효한 이메일을 입력해주세요";
-		console.log("❌ 이메일 유효성 검사 실패:", email);
-	}
+	if (!isSocialUser) {
+		if (!email || !email.includes("@")) {
+			errors.email = "유효한 이메일을 입력해주세요";
+			console.log("❌ 이메일 유효성 검사 실패:", email);
+		}
 
-	if (!password || password.length < 8) {
-		errors.password = "비밀번호는 8자 이상이어야 합니다";
-		console.log("❌ 비밀번호 유효성 검사 실패:", {
-			password,
-			length: password?.length,
-		});
+		if (!password || password.length < 8) {
+			errors.password = "비밀번호는 8자 이상이어야 합니다";
+			console.log("❌ 비밀번호 유효성 검사 실패:", {
+				password,
+				length: password?.length,
+			});
+		}
 	}
 
 	if (!name || name.trim().length < 2) {
@@ -120,55 +127,89 @@ export async function action({ request }: ActionFunctionArgs) {
 	}
 
 	try {
-		// auth.server.ts의 signUp 함수 사용
-		const { signUp } = await import("~/lib/auth.server");
-
-		const signupData = {
-			email,
-			password,
-			name: name.trim(),
-			userType: userType as "traveler" | "local_host",
-			interests,
-			languages,
-			location: location.trim(),
-			marketingConsent,
-		};
-
-		console.log("📤 회원가입 시도 중...", signupData);
-
-		const result = await signUp(signupData);
-
-		if (result.success) {
-			console.log("🎉 회원가입 성공!", {
-				userId: result.user?.id,
-				email: result.user?.email,
+		if (isSocialUser) {
+			// 소셜 로그인 사용자 - 프로필 업데이트
+			console.log("📤 소셜 로그인 사용자 프로필 업데이트 중...", {
+				socialUserId,
+				userType,
+				interests,
+				languages,
+				location,
 			});
 
-			console.log("🔄 /question_glow로 리다이렉트 시도 중...");
+			const db = (await import("~/core/db/drizzle-client.server"))
+				.default;
+			const { profiles } = await import("~/core/db/schema");
+			const { eq } = await import("drizzle-orm");
 
-			// 세션 쿠키 설정
-			const headers = new Headers();
-			if (result.session) {
-				const { createSessionCookie } = await import(
-					"~/lib/supabase.server"
-				);
-				const sessionCookie = createSessionCookie(result.session);
-				if (sessionCookie) {
-					headers.append("Set-Cookie", sessionCookie);
-				}
-			}
+			// 프로필 업데이트
+			await db
+				.update(profiles)
+				.set({
+					role: userType as "traveler" | "local_host",
+					is_host: userType === "local_host",
+					interests: interests,
+					language: languages,
+					location: location.trim(),
+					marketing_consent: marketingConsent,
+				})
+				.where(eq(profiles.profile_id, socialUserId));
 
-			// 성공 시 성향 평가 페이지로 리다이렉트 (사용자 ID 포함)
-			return redirect(`/question_glow?userId=${result.user?.id}`, {
-				headers,
-			});
+			console.log("✅ 소셜 로그인 사용자 프로필 업데이트 완료");
+
+			// 성향 평가로 리다이렉트
+			return redirect(`/question_glow?userId=${socialUserId}`);
 		} else {
-			console.log("❌ 회원가입 실패:", result.error);
-			return {
-				errors: {
-					general: result.error || "회원가입에 실패했습니다.",
-				},
+			// 기존 이메일 회원가입 처리
+			const { signUp } = await import("~/lib/auth.server");
+
+			const signupData = {
+				email,
+				password,
+				name: name.trim(),
+				userType: userType as "traveler" | "local_host",
+				interests,
+				languages,
+				location: location.trim(),
+				marketingConsent,
 			};
+
+			console.log("📤 회원가입 시도 중...", signupData);
+
+			const result = await signUp(signupData);
+
+			if (result.success) {
+				console.log("🎉 회원가입 성공!", {
+					userId: result.user?.id,
+					email: result.user?.email,
+				});
+
+				console.log("🔄 /question_glow로 리다이렉트 시도 중...");
+
+				// 세션 쿠키 설정
+				const headers = new Headers();
+				if (result.session) {
+					const { createSessionCookie } = await import(
+						"~/lib/supabase.server"
+					);
+					const sessionCookie = createSessionCookie(result.session);
+					if (sessionCookie) {
+						headers.append("Set-Cookie", sessionCookie);
+					}
+				}
+
+				// 성공 시 성향 평가 페이지로 리다이렉트 (사용자 ID 포함)
+				return redirect(`/question_glow?userId=${result.user?.id}`, {
+					headers,
+				});
+			} else {
+				console.log("❌ 회원가입 실패:", result.error);
+				return {
+					errors: {
+						general: result.error || "회원가입에 실패했습니다.",
+					},
+				};
+			}
 		}
 	} catch (error) {
 		console.error("❌ 회원가입 처리 중 예상치 못한 오류:", error);
@@ -181,7 +222,18 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export function loader({ request }: LoaderFunctionArgs) {
-	return {};
+	const url = new URL(request.url);
+	const step = url.searchParams.get("step");
+	const userId = url.searchParams.get("userId");
+	const social = url.searchParams.get("social");
+	const error = url.searchParams.get("error");
+
+	return {
+		initialStep: step ? parseInt(step) : 1,
+		userId,
+		isSocial: social === "true",
+		error,
+	};
 }
 
 export const meta: MetaFunction = () => [
@@ -289,11 +341,18 @@ const LANGUAGES = [
 
 export default function SignupGlow({
 	actionData,
+	loaderData,
 }: {
 	actionData?: ActionData;
+	loaderData?: {
+		initialStep: number;
+		userId?: string;
+		isSocial: boolean;
+		error?: string;
+	};
 }) {
 	// 다단계 폼 상태
-	const [step, setStep] = useState(1);
+	const [step, setStep] = useState(loaderData?.initialStep || 1);
 	const [formData, setFormData] = useState({
 		email: "",
 		password: "",
@@ -343,8 +402,8 @@ export default function SignupGlow({
 		const result = (() => {
 			switch (step) {
 				case 1:
-					return formData.userType !== "";
-				case 2:
+					// 소셜 로그인 사용자는 Step 1을 건너뛰므로 항상 유효
+					if (loaderData?.isSocial) return true;
 					return (
 						formData.email &&
 						formData.password &&
@@ -352,6 +411,8 @@ export default function SignupGlow({
 						formData.name &&
 						formData.password === formData.confirmPassword
 					);
+				case 2:
+					return formData.userType !== "";
 				case 3:
 					return formData.location !== "";
 				case 4:
@@ -367,6 +428,7 @@ export default function SignupGlow({
 		console.log(`🔍 Step ${step} 유효성 검사:`, {
 			step,
 			result,
+			isSocial: loaderData?.isSocial,
 			formData: step === 5 ? { languages: formData.languages } : null,
 		});
 
@@ -374,8 +436,8 @@ export default function SignupGlow({
 	};
 
 	const stepTitles = [
+		"계정을 생성해주세요",
 		"어떤 유형의 사용자인지 선택해주세요",
-		"기본 정보를 입력해주세요",
 		"위치 정보를 설정해주세요",
 		"관심사를 선택해주세요",
 		"사용 가능한 언어를 선택해주세요",
@@ -449,7 +511,12 @@ export default function SignupGlow({
 					<div className="relative">
 						<Card className="bg-black/40 backdrop-blur-md border border-purple-500/20 shadow-2xl shadow-purple-500/10">
 							<CardHeader className="text-center">
-								{step === 1 && (
+								{step === 1 && !loaderData?.isSocial && (
+									<CardTitle className="text-2xl bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+										Here&Now에 오신 것을 환영합니다!
+									</CardTitle>
+								)}
+								{step === 2 && loaderData?.isSocial && (
 									<CardTitle className="text-2xl bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
 										Here&Now에 오신 것을 환영합니다!
 									</CardTitle>
@@ -460,91 +527,8 @@ export default function SignupGlow({
 							</CardHeader>
 
 							<CardContent className="space-y-6">
-								{/* 1단계: 사용자 유형 선택 */}
-								{step === 1 && (
-									<div className="space-y-4">
-										<RadioGroup
-											value={formData.userType}
-											onValueChange={(value: string) =>
-												updateFormData({
-													userType: value,
-												})
-											}
-											className="space-y-4"
-										>
-											<div className="relative group">
-												<div className="flex items-center space-x-3 p-6 border border-purple-500/30 rounded-xl hover:bg-purple-500/10 cursor-pointer transition-all duration-300 group-hover:border-purple-400/50 bg-gradient-to-r from-purple-900/10 to-pink-900/10 backdrop-blur-sm">
-													<RadioGroupItem
-														value="traveler"
-														id="traveler"
-														className="border-purple-400 text-purple-400"
-													/>
-													<Label
-														htmlFor="traveler"
-														className="flex-1 cursor-pointer"
-													>
-														<div className="flex items-center">
-															<Globe className="w-6 h-6 mr-3 text-purple-400" />
-															<div>
-																<div className="font-semibold text-white text-lg">
-																	여행자
-																</div>
-																<div className="text-sm text-gray-300">
-																	새로운
-																	도시에서
-																	현지인과
-																	만나고
-																	싶어요
-																</div>
-															</div>
-														</div>
-													</Label>
-												</div>
-												{formData.userType ===
-													"traveler" && (
-													<BorderBeam />
-												)}
-											</div>
-
-											<div className="relative group">
-												<div className="flex items-center space-x-3 p-6 border border-purple-500/30 rounded-xl hover:bg-purple-500/10 cursor-pointer transition-all duration-300 group-hover:border-purple-400/50 bg-gradient-to-r from-blue-900/10 to-cyan-900/10 backdrop-blur-sm">
-													<RadioGroupItem
-														value="local_host"
-														id="local_host"
-														className="border-purple-400 text-purple-400"
-													/>
-													<Label
-														htmlFor="local_host"
-														className="flex-1 cursor-pointer"
-													>
-														<div className="flex items-center">
-															<Heart className="w-6 h-6 mr-3 text-pink-400" />
-															<div>
-																<div className="font-semibold text-white text-lg">
-																	현지 호스트
-																</div>
-																<div className="text-sm text-gray-300">
-																	여행자들과
-																	만나서 우리
-																	동네를
-																	소개하고
-																	싶어요
-																</div>
-															</div>
-														</div>
-													</Label>
-												</div>
-												{formData.userType ===
-													"local_host" && (
-													<BorderBeam />
-												)}
-											</div>
-										</RadioGroup>
-									</div>
-								)}
-
-								{/* 2단계: 기본 정보 입력 */}
-								{step === 2 && (
+								{/* 1단계: 기본 정보 입력 */}
+								{step === 1 && !loaderData?.isSocial && (
 									<div className="space-y-6">
 										<div className="space-y-2">
 											<Label
@@ -655,29 +639,135 @@ export default function SignupGlow({
 													</p>
 												)}
 										</div>
-										{/* 
-										<div className="space-y-2">
-											<Label
-												htmlFor="bio"
-												className="text-purple-300 font-medium"
-											>
-												자기소개 (선택)
-											</Label>
-											<Textarea
-												id="bio"
-												value={formData.bio}
-												onChange={(
-													e: React.ChangeEvent<HTMLTextAreaElement>
-												) =>
-													updateFormData({
-														bio: e.target.value,
-													})
-												}
-												placeholder="자신을 간단히 소개해보세요"
-												rows={3}
-												className="bg-black/20 border-purple-500/30 text-white placeholder:text-gray-400 focus:border-purple-400 focus:ring-purple-400/20 backdrop-blur-sm resize-none"
-											/>
-										</div> */}
+
+										{/* 소셜 로그인 섹션 */}
+										<div className="mt-6">
+											{/* 구분선 */}
+											<div className="relative">
+												<div className="absolute inset-0 flex items-center">
+													<div className="w-full border-t border-purple-500/30"></div>
+												</div>
+												<div className="relative flex justify-center text-sm">
+													<span className="px-4 bg-black text-gray-400">
+														또는
+													</span>
+												</div>
+											</div>
+
+											{/* 소셜 로그인 버튼들 */}
+											<div className="mt-6 space-y-3">
+												<Button
+													type="button"
+													variant="outline"
+													className="w-full border-purple-500/30 text-white hover:bg-purple-500/10 hover:border-purple-400/50 backdrop-blur-sm bg-black/20 py-3"
+													onClick={() =>
+														handleSocialLogin(
+															"google"
+														)
+													}
+												>
+													<GoogleLogo className="w-5 h-5 mr-3" />
+													Google로 계속하기
+												</Button>
+
+												<Button
+													type="button"
+													variant="outline"
+													className="w-full border-purple-500/30 text-white hover:bg-purple-500/10 hover:border-purple-400/50 backdrop-blur-sm bg-black/20 py-3"
+													onClick={() =>
+														handleSocialLogin(
+															"kakao"
+														)
+													}
+												>
+													<KakaoLogo className="w-5 h-5 mr-3 size-4 scale-125 text-yellow-300" />
+													Kakao로 계속하기
+												</Button>
+											</div>
+										</div>
+									</div>
+								)}
+
+								{/* 2단계: 사용자 유형 선택 */}
+								{step === 2 && (
+									<div className="space-y-4">
+										<RadioGroup
+											value={formData.userType}
+											onValueChange={(value: string) =>
+												updateFormData({
+													userType: value,
+												})
+											}
+											className="space-y-4"
+										>
+											<div className="relative group">
+												<div className="flex items-center space-x-3 p-6 border border-purple-500/30 rounded-xl hover:bg-purple-500/10 cursor-pointer transition-all duration-300 group-hover:border-purple-400/50 bg-gradient-to-r from-purple-900/10 to-pink-900/10 backdrop-blur-sm">
+													<RadioGroupItem
+														value="traveler"
+														id="traveler"
+														className="border-purple-400 text-purple-400"
+													/>
+													<Label
+														htmlFor="traveler"
+														className="flex-1 cursor-pointer"
+													>
+														<div className="flex items-center">
+															<Globe className="w-6 h-6 mr-3 text-purple-400" />
+															<div>
+																<div className="font-semibold text-white text-lg">
+																	여행자
+																</div>
+																<div className="text-sm text-gray-300">
+																	새로운
+																	도시에서
+																	현지인과
+																	만나고
+																	싶어요
+																</div>
+															</div>
+														</div>
+													</Label>
+												</div>
+												{formData.userType ===
+													"traveler" && (
+													<BorderBeam />
+												)}
+											</div>
+
+											<div className="relative group">
+												<div className="flex items-center space-x-3 p-6 border border-purple-500/30 rounded-xl hover:bg-purple-500/10 cursor-pointer transition-all duration-300 group-hover:border-purple-400/50 bg-gradient-to-r from-blue-900/10 to-cyan-900/10 backdrop-blur-sm">
+													<RadioGroupItem
+														value="local_host"
+														id="local_host"
+														className="border-purple-400 text-purple-400"
+													/>
+													<Label
+														htmlFor="local_host"
+														className="flex-1 cursor-pointer"
+													>
+														<div className="flex items-center">
+															<Heart className="w-6 h-6 mr-3 text-pink-400" />
+															<div>
+																<div className="font-semibold text-white text-lg">
+																	현지 호스트
+																</div>
+																<div className="text-sm text-gray-300">
+																	여행자들과
+																	만나서 우리
+																	동네를
+																	소개하고
+																	싶어요
+																</div>
+															</div>
+														</div>
+													</Label>
+												</div>
+												{formData.userType ===
+													"local_host" && (
+													<BorderBeam />
+												)}
+											</div>
+										</RadioGroup>
 									</div>
 								)}
 
@@ -945,7 +1035,17 @@ export default function SignupGlow({
 
 								{/* 네비게이션 버튼 */}
 								<div className="flex justify-between pt-6">
-									{step > 1 ? (
+									{step > 1 && !loaderData?.isSocial ? (
+										<Button
+											type="button"
+											variant="outline"
+											onClick={prevStep}
+											className="border-purple-500/50 text-purple-100 hover:text-purple-300 hover:bg-purple-500/20 hover:border-purple-400/70 backdrop-blur-sm bg-purple-700/20"
+										>
+											<ChevronLeft className="w-4 h-4 mr-2" />
+											이전
+										</Button>
+									) : step > 2 && loaderData?.isSocial ? (
 										<Button
 											type="button"
 											variant="outline"
@@ -1005,11 +1105,6 @@ export default function SignupGlow({
 												name="name"
 												value={formData.name}
 											/>
-											{/* <input
-												type="hidden"
-												name="bio"
-												value={formData.bio}
-											/> */}
 											<input
 												type="hidden"
 												name="userType"
@@ -1039,6 +1134,17 @@ export default function SignupGlow({
 												name="marketingConsent"
 												value={formData.marketingConsent.toString()}
 											/>
+											{/* 소셜 로그인 사용자의 경우 userId 포함 */}
+											{loaderData?.isSocial &&
+												loaderData?.userId && (
+													<input
+														type="hidden"
+														name="socialUserId"
+														value={
+															loaderData.userId
+														}
+													/>
+												)}
 
 											<div className="relative">
 												<Button
@@ -1075,44 +1181,6 @@ export default function SignupGlow({
 							</CardContent>
 						</Card>
 						<BorderBeam />
-					</div>
-
-					{/* 소셜 로그인 섹션 */}
-					<div className="mt-8">
-						{/* 구분선 */}
-						<div className="relative">
-							<div className="absolute inset-0 flex items-center">
-								<div className="w-full border-t border-purple-500/30"></div>
-							</div>
-							<div className="relative flex justify-center text-sm">
-								<span className="px-4 bg-black text-gray-400">
-									또는
-								</span>
-							</div>
-						</div>
-
-						{/* 소셜 로그인 버튼들 */}
-						<div className="mt-6 space-y-3">
-							<Button
-								type="button"
-								variant="outline"
-								className="w-full border-purple-500/30 text-white hover:bg-purple-500/10 hover:border-purple-400/50 backdrop-blur-sm bg-black/20 py-3"
-								onClick={() => handleSocialLogin("google")}
-							>
-								<GoogleLogo className="w-5 h-5 mr-3" />
-								Google로 계속하기
-							</Button>
-
-							<Button
-								type="button"
-								variant="outline"
-								className="w-full border-purple-500/30 text-white hover:bg-purple-500/10 hover:border-purple-400/50 backdrop-blur-sm bg-black/20 py-3"
-								onClick={() => handleSocialLogin("kakao")}
-							>
-								<KakaoLogo className="w-5 h-5 mr-3 size-4 scale-125 text-yellow-300" />
-								Kakao로 계속하기
-							</Button>
-						</div>
 					</div>
 
 					{/* 로그인 링크 */}
