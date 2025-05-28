@@ -35,7 +35,6 @@ import {
 	Globe,
 	Star,
 	Loader2,
-	Chrome,
 } from "lucide-react";
 import { BorderBeam } from "components/magicui/border-beam";
 
@@ -48,52 +47,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
 	const formData = await request.formData();
 	console.log("📝 FormData 받음:", Object.fromEntries(formData.entries()));
-
-	const action = formData.get("action") as string;
-
-	// 소셜 로그인 처리
-	if (action === "social_login") {
-		const provider = formData.get("provider") as string;
-		console.log(`🔗 ${provider} 소셜 로그인 처리 시작`);
-
-		try {
-			const { supabase } = await import("~/lib/supabase.server");
-
-			const redirectUrl = new URL(request.url).origin + "/auth/callback";
-
-			const { data, error } = await supabase.auth.signInWithOAuth({
-				provider: provider as "google" | "kakao",
-				options: {
-					redirectTo: redirectUrl,
-					queryParams: {
-						access_type: "offline",
-						prompt: "consent",
-					},
-				},
-			});
-
-			if (error) {
-				console.error(`❌ ${provider} 소셜 로그인 오류:`, error);
-				return Response.json({ error: error.message }, { status: 400 });
-			}
-
-			if (data.url) {
-				console.log(`✅ ${provider} OAuth URL 생성 성공:`, data.url);
-				return Response.json({ redirectUrl: data.url });
-			}
-
-			return Response.json(
-				{ error: "OAuth URL 생성 실패" },
-				{ status: 400 }
-			);
-		} catch (error) {
-			console.error(`❌ ${provider} 소셜 로그인 처리 중 오류:`, error);
-			return Response.json(
-				{ error: "소셜 로그인 처리 중 오류가 발생했습니다." },
-				{ status: 500 }
-			);
-		}
-	}
 
 	// 기존 이메일 회원가입 처리
 	const email = formData.get("email") as string;
@@ -435,33 +388,8 @@ export default function SignupGlow({
 		try {
 			console.log(`🔗 ${provider} 소셜 로그인 시작`);
 
-			// 서버 액션을 통해 소셜 로그인 처리
-			const form = new FormData();
-			form.append("provider", provider);
-			form.append("action", "social_login");
-
-			// 현재 폼 데이터도 함께 전송 (나중에 프로필 완성용)
-			form.append("userType", formData.userType);
-			form.append("interests", JSON.stringify(formData.interests));
-			form.append("languages", JSON.stringify(formData.languages));
-			form.append("location", formData.location);
-			form.append(
-				"marketingConsent",
-				formData.marketingConsent.toString()
-			);
-
-			const response = await fetch(window.location.pathname, {
-				method: "POST",
-				body: form,
-			});
-
-			const result = await response.json();
-
-			if (result.redirectUrl) {
-				window.location.href = result.redirectUrl;
-			} else if (result.error) {
-				console.error(`❌ ${provider} 로그인 오류:`, result.error);
-			}
+			// 기존 소셜 로그인 라우트로 리다이렉트
+			window.location.href = `/auth/social/${provider}/start`;
 		} catch (error) {
 			console.error(`❌ ${provider} 로그인 처리 중 오류:`, error);
 		}

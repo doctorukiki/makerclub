@@ -1,4 +1,9 @@
-import { type RouteConfig, index, route } from "@react-router/dev/routes";
+import {
+	type RouteConfig,
+	index,
+	route,
+	prefix,
+} from "@react-router/dev/routes";
 
 export default [
 	index("routes/_index.tsx"),
@@ -9,4 +14,11 @@ export default [
 	route("/signup_glow", "routes/signup_glow.tsx"),
 	route("/question_glow", "routes/question_glow.tsx"),
 	route("/question", "routes/question.tsx"),
+	...prefix("/auth", [
+		...prefix("/social/:provider", [
+			route("/start", "features/auth/pages/social-start-page.tsx"),
+			route("/complete", "features/auth/pages/social-complete-page.tsx"),
+		]),
+		route("/logout", "features/auth/pages/logout-page.tsx"),
+	]),
 ] satisfies RouteConfig;
