@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, Form, redirect } from "react-router";
+import { Link, Form, redirect, useNavigation } from "react-router";
 import type {
 	ActionFunctionArgs,
 	LoaderFunctionArgs,
@@ -20,6 +20,7 @@ import {
 	Heart,
 	CheckCircle,
 	ArrowRight,
+	Loader2,
 } from "lucide-react";
 import { BorderBeam } from "components/magicui/border-beam";
 
@@ -402,6 +403,8 @@ export default function Question() {
 		{}
 	);
 
+	const navigation = useNavigation();
+
 	const totalQuestions = CHOICE_QUESTIONS.length + SCALE_QUESTIONS.length;
 	const isChoiceQuestion = currentQuestion <= 30;
 	const isScaleQuestion = currentQuestion > 30;
@@ -741,17 +744,31 @@ export default function Question() {
 												<Button
 													type="submit"
 													disabled={
-														!isAllQuestionsAnswered()
+														!isAllQuestionsAnswered() ||
+														navigation.state ===
+															"submitting"
 													}
 													className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 hover:from-purple-700 hover:via-pink-700 hover:to-blue-700 text-white px-8 py-3 font-semibold shadow-lg shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
 												>
-													<Heart className="w-5 h-5 mr-2" />
-													완료하기
-													<ArrowRight className="w-5 h-5 ml-2" />
+													{navigation.state ===
+													"submitting" ? (
+														<>
+															<Loader2 className="w-5 h-5 mr-2 animate-spin" />
+															분석 중...
+														</>
+													) : (
+														<>
+															<Heart className="w-5 h-5 mr-2" />
+															완료하기
+															<ArrowRight className="w-5 h-5 ml-2" />
+														</>
+													)}
 												</Button>
-												{isAllQuestionsAnswered() && (
-													<BorderBeam />
-												)}
+												{isAllQuestionsAnswered() &&
+													navigation.state !==
+														"submitting" && (
+														<BorderBeam />
+													)}
 											</div>
 										</Form>
 									)}
