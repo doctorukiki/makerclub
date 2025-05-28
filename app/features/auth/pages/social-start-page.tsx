@@ -14,11 +14,25 @@ export const loader = async ({ params, request }: Route.LoaderArgs) => {
 	}
 	const { provider } = data;
 
-	// 현재 도메인을 기반으로 리다이렉트 URL 생성
+	// 환경에 따른 올바른 도메인 설정
 	const url = new URL(request.url);
-	const redirectTo = `${url.origin}/auth/social/${provider}/complete`;
+	const isDevelopment =
+		url.hostname === "localhost" || url.hostname === "127.0.0.1";
 
-	console.log(`🔗 ${provider} OAuth 시작:`, { redirectTo });
+	// 환경 변수에서 서비스 URL 가져오기, 개발 환경이면 localhost 사용
+	const serviceUrl =
+		process.env.SERVICE_DNS_URL || "https://makerclub.vercel.app";
+	const redirectTo = isDevelopment
+		? `http://localhost:3000/auth/social/${provider}/complete`
+		: `${serviceUrl}/auth/social/${provider}/complete`;
+
+	console.log(`🔗 ${provider} OAuth 시작:`, {
+		redirectTo,
+		hostname: url.hostname,
+		isDevelopment,
+		serviceUrl,
+		origin: url.origin,
+	});
 
 	try {
 		const { supabase } = await import("~/lib/supabase.server");
