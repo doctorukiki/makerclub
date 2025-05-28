@@ -39,6 +39,9 @@ import {
 } from "lucide-react";
 import { BorderBeam } from "components/magicui/border-beam";
 
+import { GoogleLogo } from "~/components/logos/google";
+import { KakaoLogo } from "~/components/logos/kakao";
+
 // 서버 액션 - 회원가입 처리
 export async function action({ request }: ActionFunctionArgs) {
 	console.log("🚀 Action 함수가 호출되었습니다!");
@@ -1168,7 +1171,7 @@ export default function SignupGlow({
 								className="w-full border-purple-500/30 text-white hover:bg-purple-500/10 hover:border-purple-400/50 backdrop-blur-sm bg-black/20 py-3"
 								onClick={() => handleSocialLogin("google")}
 							>
-								<Chrome className="w-5 h-5 mr-3" />
+								<GoogleLogo className="w-5 h-5 mr-3" />
 								Google로 계속하기
 							</Button>
 
@@ -1178,11 +1181,7 @@ export default function SignupGlow({
 								className="w-full border-purple-500/30 text-white hover:bg-purple-500/10 hover:border-purple-400/50 backdrop-blur-sm bg-black/20 py-3"
 								onClick={() => handleSocialLogin("kakao")}
 							>
-								<div className="w-5 h-5 mr-3 bg-yellow-400 rounded-sm flex items-center justify-center">
-									<span className="text-black text-xs font-bold">
-										K
-									</span>
-								</div>
+								<KakaoLogo className="w-5 h-5 mr-3 size-4 scale-125 text-yellow-300" />
 								Kakao로 계속하기
 							</Button>
 						</div>
