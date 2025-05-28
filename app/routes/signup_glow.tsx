@@ -35,6 +35,7 @@ import {
 	Globe,
 	Star,
 	Loader2,
+	Chrome,
 } from "lucide-react";
 import { BorderBeam } from "components/magicui/border-beam";
 
@@ -45,6 +46,53 @@ export async function action({ request }: ActionFunctionArgs) {
 	const formData = await request.formData();
 	console.log("📝 FormData 받음:", Object.fromEntries(formData.entries()));
 
+	const action = formData.get("action") as string;
+
+	// 소셜 로그인 처리
+	if (action === "social_login") {
+		const provider = formData.get("provider") as string;
+		console.log(`🔗 ${provider} 소셜 로그인 처리 시작`);
+
+		try {
+			const { supabase } = await import("~/lib/supabase.server");
+
+			const redirectUrl = new URL(request.url).origin + "/auth/callback";
+
+			const { data, error } = await supabase.auth.signInWithOAuth({
+				provider: provider as "google" | "kakao",
+				options: {
+					redirectTo: redirectUrl,
+					queryParams: {
+						access_type: "offline",
+						prompt: "consent",
+					},
+				},
+			});
+
+			if (error) {
+				console.error(`❌ ${provider} 소셜 로그인 오류:`, error);
+				return Response.json({ error: error.message }, { status: 400 });
+			}
+
+			if (data.url) {
+				console.log(`✅ ${provider} OAuth URL 생성 성공:`, data.url);
+				return Response.json({ redirectUrl: data.url });
+			}
+
+			return Response.json(
+				{ error: "OAuth URL 생성 실패" },
+				{ status: 400 }
+			);
+		} catch (error) {
+			console.error(`❌ ${provider} 소셜 로그인 처리 중 오류:`, error);
+			return Response.json(
+				{ error: "소셜 로그인 처리 중 오류가 발생했습니다." },
+				{ status: 500 }
+			);
+		}
+	}
+
+	// 기존 이메일 회원가입 처리
 	const email = formData.get("email") as string;
 	const password = formData.get("password") as string;
 	const name = formData.get("name") as string;
@@ -378,6 +426,43 @@ export default function SignupGlow({
 	];
 
 	const navigation = useNavigation();
+
+	// 소셜 로그인 처리
+	const handleSocialLogin = async (provider: "google" | "kakao") => {
+		try {
+			console.log(`🔗 ${provider} 소셜 로그인 시작`);
+
+			// 서버 액션을 통해 소셜 로그인 처리
+			const form = new FormData();
+			form.append("provider", provider);
+			form.append("action", "social_login");
+
+			// 현재 폼 데이터도 함께 전송 (나중에 프로필 완성용)
+			form.append("userType", formData.userType);
+			form.append("interests", JSON.stringify(formData.interests));
+			form.append("languages", JSON.stringify(formData.languages));
+			form.append("location", formData.location);
+			form.append(
+				"marketingConsent",
+				formData.marketingConsent.toString()
+			);
+
+			const response = await fetch(window.location.pathname, {
+				method: "POST",
+				body: form,
+			});
+
+			const result = await response.json();
+
+			if (result.redirectUrl) {
+				window.location.href = result.redirectUrl;
+			} else if (result.error) {
+				console.error(`❌ ${provider} 로그인 오류:`, result.error);
+			}
+		} catch (error) {
+			console.error(`❌ ${provider} 로그인 처리 중 오류:`, error);
+		}
+	};
 
 	return (
 		<div className="min-h-screen bg-black text-white overflow-hidden">
@@ -1059,6 +1144,48 @@ export default function SignupGlow({
 							</CardContent>
 						</Card>
 						<BorderBeam />
+					</div>
+
+					{/* 소셜 로그인 섹션 */}
+					<div className="mt-8">
+						{/* 구분선 */}
+						<div className="relative">
+							<div className="absolute inset-0 flex items-center">
+								<div className="w-full border-t border-purple-500/30"></div>
+							</div>
+							<div className="relative flex justify-center text-sm">
+								<span className="px-4 bg-black text-gray-400">
+									또는
+								</span>
+							</div>
+						</div>
+
+						{/* 소셜 로그인 버튼들 */}
+						<div className="mt-6 space-y-3">
+							<Button
+								type="button"
+								variant="outline"
+								className="w-full border-purple-500/30 text-white hover:bg-purple-500/10 hover:border-purple-400/50 backdrop-blur-sm bg-black/20 py-3"
+								onClick={() => handleSocialLogin("google")}
+							>
+								<Chrome className="w-5 h-5 mr-3" />
+								Google로 계속하기
+							</Button>
+
+							<Button
+								type="button"
+								variant="outline"
+								className="w-full border-purple-500/30 text-white hover:bg-purple-500/10 hover:border-purple-400/50 backdrop-blur-sm bg-black/20 py-3"
+								onClick={() => handleSocialLogin("kakao")}
+							>
+								<div className="w-5 h-5 mr-3 bg-yellow-400 rounded-sm flex items-center justify-center">
+									<span className="text-black text-xs font-bold">
+										K
+									</span>
+								</div>
+								Kakao로 계속하기
+							</Button>
+						</div>
 					</div>
 
 					{/* 로그인 링크 */}

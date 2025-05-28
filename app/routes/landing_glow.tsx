@@ -15,6 +15,8 @@ import {
 	Sparkles,
 	Zap,
 	ArrowRight,
+	Utensils,
+	Music,
 } from "lucide-react";
 import type {
 	ActionFunctionArgs,
@@ -54,13 +56,13 @@ export default function LandingGlow() {
 		{
 			icon: Users,
 			title: "순간의 만남",
-			description: "지금 여기서, 바로 지금 만날 수 있는 사람들",
+			description: "지금 여기서, 바로 만날 수 있는 사람들",
 			color: "from-purple-500 to-pink-500",
 		},
 		{
 			icon: Heart,
 			title: "진짜 연결",
-			description: "관심사와 취향으로 연결되는 진정한 인연",
+			description: "관심사와 취향으로 연결되는 인연",
 			color: "from-blue-500 to-cyan-500",
 		},
 		{
@@ -268,10 +270,10 @@ export default function LandingGlow() {
 							<div className="text-left">
 								<p className="text-white mb-2">
 									<Coffee className="w-4 h-4 inline mr-2" />
-									홍대에서 커피 마실 사람 구해요!
+									광화문에서 커피 마실 사람 구해요!
 								</p>
 								<p className="text-gray-400 text-sm">
-									서울 • 방금 전
+									서울, 내수동 • 방금 전
 								</p>
 							</div>
 						</div>
@@ -289,7 +291,43 @@ export default function LandingGlow() {
 									후지산 사진 찍으러 가실 분!
 								</p>
 								<p className="text-gray-400 text-sm">
-									도쿄 • 1분 전
+									tokyo, nihonba-shi • 1분 전
+								</p>
+							</div>
+						</div>
+
+						<div className="relative p-6 rounded-xl border border-blue-500/30 bg-gradient-to-br from-blue-900/20 to-cyan-900/20 backdrop-blur-sm">
+							<div className="flex items-center mb-4">
+								<div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse mr-3" />
+								<span className="text-blue-400 font-semibold">
+									LIVE
+								</span>
+							</div>
+							<div className="text-left">
+								<p className="text-white mb-2">
+									<Utensils className="w-4 h-4 inline mr-2" />
+									홍대 맛집 투어 같이 해요~
+								</p>
+								<p className="text-gray-400 text-sm">
+									서울, 홍대입구 • 2분 전
+								</p>
+							</div>
+						</div>
+
+						<div className="relative p-6 rounded-xl border border-orange-500/30 bg-gradient-to-br from-orange-900/20 to-red-900/20 backdrop-blur-sm">
+							<div className="flex items-center mb-4">
+								<div className="w-3 h-3 bg-orange-500 rounded-full animate-pulse mr-3" />
+								<span className="text-orange-400 font-semibold">
+									LIVE
+								</span>
+							</div>
+							<div className="text-left">
+								<p className="text-white mb-2">
+									<Music className="w-4 h-4 inline mr-2" />
+									코인 노래방에서 스트레스 풀어요!
+								</p>
+								<p className="text-gray-400 text-sm">
+									서울, 강남구 • 3분 전
 								</p>
 							</div>
 						</div>
